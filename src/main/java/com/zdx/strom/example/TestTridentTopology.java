@@ -40,8 +40,8 @@ import storm.trident.operation.builtin.Sum;
 import storm.trident.testing.MemoryMapState;
 import storm.trident.tuple.TridentTuple;
 
-import com.alibaba.aloha.meta.MetaSpout;
-import com.alibaba.aloha.meta.MetaTuple;
+import com.zdx.strom.example.common.MetaSpout;
+import com.zdx.strom.example.common.MetaTuple;
 
 public class TestTridentTopology {
 	private static final Logger LOG = Logger.getLogger(TestTridentTopology.class);

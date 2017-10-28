@@ -30,6 +30,8 @@ import org.yaml.snakeyaml.Yaml;
 import backtype.storm.Config;
 import backtype.storm.LocalCluster;
 import backtype.storm.StormSubmitter;
+import backtype.storm.topology.BoltDeclarer;
+import backtype.storm.topology.SpoutDeclarer;
 import backtype.storm.topology.TopologyBuilder;
 
 
@@ -47,7 +49,9 @@ public class TestTopology {
 	private static Logger LOG = Logger.getLogger(TestTopology.class);
 
 	public static String WRITER_COMPONENT = "writer";
-
+	
+	private static Map conf = new HashMap<Object, Object>();
+	
 	public static void main(String[] args) throws Exception {
 		if (args.length == 0) {
 			System.err.println("Please input configuration file");
@@ -64,18 +68,30 @@ public class TestTopology {
 
 	private static TopologyBuilder setupBuilder() throws Exception {
 		TopologyBuilder builder = new TopologyBuilder();
-
-		int writerParallel = JStormUtils.parseInt(
-				conf.get("topology.writer.parallel"), 1);
+		int boltParallel = JStormUtils.parseInt(
+				conf.get("topology.bolt.parallel"), 1);
 
 		int spoutParallel = JStormUtils.parseInt(
 				conf.get("topology.spout.parallel"), 1);
-
-		builder.setSpout("MetaSpout", new MetaSpout(), spoutParallel);
-
-		builder.setBolt(WRITER_COMPONENT, new WriterBolt(), writerParallel)
-				.shuffleGrouping("MetaSpout");
-
+		String spoutName = String.valueOf(conf.get("topology.spout.name"));
+		//创建Spout， 其中new MetaSpout() 为真正spout对象，MetaSpout 为spout的名字，注意名字中不要含有空格
+		SpoutDeclarer spout = builder.setSpout(spoutName, new MetaSpout(), spoutParallel);
+		
+		String boltName = String.valueOf(conf.get("topology.bolt.name"));
+		//创建bolt, boltName为bolt名字，WriterBolt 为bolt对象，boltParallel为bolt并发数
+		//shuffleGrouping(boltName)， 表示接收SspoutName的数据，并且以shuffle方式，
+		//即每个spout随机轮询发送tuple到下一级bolt中
+		BoltDeclarer totalBolt = builder.setBolt(boltName, new WriterBolt(), boltParallel).shuffleGrouping(spoutName);
+		
+		//int ackerParal = JStormUtils.parseInt(conf.get("acker.parallel"), 1);
+		//Config.setNumAckers(conf, ackerParal);
+		//设置表示acker的并发数
+		//int workerNum = JStormUtils.parseInt(conf.get("worker.num"), 10);
+		//conf.put(Config.TOPOLOGY_WORKERS, workerNum);
+		//表示整个topology将使用几个worker
+		//conf.put(Config.STORM_CLUSTER_MODE, "distributed");
+		//设置topolog模式为分布式，这样topology就可以放到JStorm集群上运行
+		
 		return builder;
 	}
 
@@ -103,7 +119,7 @@ public class TestTopology {
 		}
 	}
 
-	private static Map conf = new HashMap<Object, Object>();
+	
 
 	private static void LoadProperty(String prop) {
 		Properties properties = new Properties();
