@@ -15,27 +15,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package meta;
+package com.zdx.strom.example.common;
 
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+
 import com.alibaba.jstorm.utils.JStormUtils;
 
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import org.apache.rocketmq.common.consumer.ConsumeFromWhere;
 import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
-
+import com.taobao.metaq.client.MetaHelper;
 
 public class MetaConsumerFactory {
 	
-	private static final Logger	LOG = Logger.getLogger(MetaConsumerFactory.class);
+	private static final Logger	LOG   = Logger.getLogger(MetaConsumerFactory.class);
 	
     
-    private static final long serialVersionUID = 4641537253577312163L;
+    private static final long                 serialVersionUID = 4641537253577312163L;
     
     public static Map<String, DefaultMQPushConsumer> consumers = 
     		new HashMap<String, DefaultMQPushConsumer>();
@@ -65,11 +66,15 @@ public class MetaConsumerFactory {
         LOG.info(sb.toString());
         
         consumer = new DefaultMQPushConsumer(groupId);
+        
         String nameServer = config.getNameServer();
         if ( nameServer != null) {
 			String namekey = "rocketmq.namesrv.domain";
+
 			String value = System.getProperty(namekey);
+			// this is for alipay
 			if (value == null) {
+
 				System.setProperty(namekey, nameServer);
 			} else if (value.equals(nameServer) == false) {
 				throw new Exception(

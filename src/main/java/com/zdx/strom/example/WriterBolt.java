@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package meta.example;
+package com.zdx.strom.example;
 
 import java.util.Map;
 
@@ -27,7 +27,7 @@ import backtype.storm.topology.IRichBolt;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Tuple;
 
-import meta.MetaTuple;
+import com.zdx.strom.example.common.MetaTuple;
 
 
 public class WriterBolt implements IRichBolt {

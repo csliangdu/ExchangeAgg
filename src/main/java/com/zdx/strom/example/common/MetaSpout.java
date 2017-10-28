@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package meta;
+package com.zdx.strom.example.common;
 
 import com.alibaba.jstorm.common.metric.AsmHistogram;
 import com.alibaba.jstorm.metric.MetricClient;
@@ -31,23 +31,20 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
 
-
 import com.alibaba.jstorm.client.spout.IAckValueSpout;
 import com.alibaba.jstorm.client.spout.IFailValueSpout;
 import com.alibaba.jstorm.utils.JStormUtils;
+import com.zdx.strom.example.LoadConfig;
 
-import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import org.apache.rocketmq.common.message.MessageExt;
 
+import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-//import com.taobao.metaq.client.MetaPushConsumer;
-
-import meta.example.LoadConfig;
 
 public class MetaSpout implements IRichSpout, IAckValueSpout, IFailValueSpout, MessageListenerConcurrently {
 
@@ -57,7 +54,7 @@ public class MetaSpout implements IRichSpout, IAckValueSpout, IFailValueSpout, M
     protected MetaClientConfig metaClientConfig;
     protected SpoutOutputCollector collector;
     protected transient DefaultMQPushConsumer consumer;
-    
+
     protected Map conf;
     protected String id;
     protected boolean flowControl;

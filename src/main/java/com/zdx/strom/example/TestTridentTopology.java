@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package meta.example;
+package com.zdx.strom.example;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -40,8 +40,8 @@ import storm.trident.operation.builtin.Sum;
 import storm.trident.testing.MemoryMapState;
 import storm.trident.tuple.TridentTuple;
 
-import meta.MetaSpout;
-import meta.MetaTuple;
+import com.alibaba.aloha.meta.MetaSpout;
+import com.alibaba.aloha.meta.MetaTuple;
 
 public class TestTridentTopology {
 	private static final Logger LOG = Logger.getLogger(TestTridentTopology.class);
