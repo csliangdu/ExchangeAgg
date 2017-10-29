@@ -29,7 +29,7 @@ public class TestRocketMQStormBolt implements IRichBolt {
 		// TODO Auto-generated method stub
 		MetaType metaTuple = (MetaType)tuple.getValue(0);
 		try {
-			logger.info("Messages:" + metaTuple);
+			logger.info("Messages:" + metaTuple.toString());
 		} catch (Exception e) {
 			collector.fail(tuple);
 			return ;

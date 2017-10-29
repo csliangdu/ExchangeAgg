@@ -68,7 +68,7 @@ public class TestRocketMQProducer {
 			ptb.execute(new ParallecResponseHandler(){
 				public void onCompleted(ResponseOnSingleTask res, Map<String, Object> responseContext) {
 					Message msg = new Message();
-					msg.setTopic("TopicTest");
+					msg.setTopic("tiker");
 					msg.setTags("TagA");
 					
 					String Host = res.getRequest().getHostUniform(); //www.okcoin.com

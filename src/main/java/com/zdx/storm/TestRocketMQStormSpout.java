@@ -9,10 +9,11 @@ import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.common.consumer.ConsumeFromWhere;
 import org.apache.rocketmq.common.message.MessageExt;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 
 import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
@@ -26,18 +27,16 @@ public class TestRocketMQStormSpout extends BaseRichSpout implements MessageList
 	private SpoutOutputCollector collector;  
 	private transient DefaultMQPushConsumer consumer;  
 	private static final Logger logger = LogManager.getLogger(TestRocketMQStormSpout.class);
-	
+
 	@SuppressWarnings("rawtypes")  
 	public void open(Map conf, TopologyContext context, SpoutOutputCollector collector) { 
-		
+
 		logger.info("init DefaultMQPushConsumer");  
-		consumer = new DefaultMQPushConsumer(RaceConfig.MetaConsumerGroup);  
-		//   consumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_FIRST_OFFSET);  
-		consumer.setNamesrvAddr("ip:port");
-		try {  
-			consumer.subscribe(RaceConfig.MqTmallTradeTopic, "*");  
-			consumer.subscribe(RaceConfig.MqTaobaoTradeTopic, "*");  
-			consumer.subscribe(RaceConfig.MqPayTopic, "*");  
+		consumer = new DefaultMQPushConsumer(AggConfig.consumerGroup); 
+		consumer.setNamesrvAddr(AggConfig.getRocketMQNameServerAddress());
+		consumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_FIRST_OFFSET);
+		try {
+			consumer.subscribe("ticker", "*");
 		} catch (MQClientException e) {  
 			e.printStackTrace();  
 		}  
@@ -46,8 +45,7 @@ public class TestRocketMQStormSpout extends BaseRichSpout implements MessageList
 			consumer.start();  
 		} catch (MQClientException e) {  
 			e.printStackTrace();  
-		}  
-
+		} 
 
 		logger.info("Consumer Started.");  
 		this.collector = collector;  
@@ -61,30 +59,19 @@ public class TestRocketMQStormSpout extends BaseRichSpout implements MessageList
 	@Override  
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {  
 		//...  
-	}  
+	}
 
-	@Override  
-	public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> msgs,ConsumeConcurrentlyContext context) {  
-
-
-		for (MessageExt msg : msgs) {  
-			byte[] body = msg.getBody();  
-			if (body.length == 2 && body[0] == 0 && body[1] == 0) {
-				logger.info("Got the end signal");  
-				collector.emit("stop",new Values("stop"));  
-				continue;  
-			}  
-			if (msg.getTopic().equals(RaceConfig.MqPayTopic)) {  
-				return doPayTopic(body);  
-			}else if (msg.getTopic().equals(RaceConfig.MqTaobaoTradeTopic)) {  
-				putTaobaoTradeToTair(body);  
-				return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;  
-			} else if (msg.getTopic().equals(RaceConfig.MqTmallTradeTopic)) {  
-				putTmallTradeToTair(body);  
-				return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;  
-			}else {  
-				return ConsumeConcurrentlyStatus.RECONSUME_LATER;  
-			} 
+	@Override
+	public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> msgs,
+			ConsumeConcurrentlyContext context) {  
+		for (MessageExt msg : msgs) {
+			String body = new String(msg.getBody());
+			JSONObject jsonObject = JSON.parseObject(body);
+			logger.info("Spout Message = " + msg.toString());
+			//·ÖÁ÷: BTC_CASH VS ETH_CASH OR COIN_CAHS VS COIN_COIN
+			if (String.valueOf(jsonObject.get("path")).contains("btc")){
+				collector.emit("btc", new Values(jsonObject.toJSONString()));
+			}
 		}  
 		return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;  
 	}

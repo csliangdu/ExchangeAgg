@@ -1,8 +1,10 @@
 package com.zdx.storm;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -15,7 +17,6 @@ import backtype.storm.LocalCluster;
 import backtype.storm.StormSubmitter;
 import backtype.storm.topology.TopologyBuilder;
 
-import com.alibaba.aloha.meta.MetaSpout;
 import com.alibaba.jstorm.utils.JStormUtils;
 
 /**
@@ -28,15 +29,14 @@ public class TestStormTopology {
 
 	private static Logger LOG = Logger.getLogger(TestStormTopology.class);
 
-	public static String WRITER_COMPONENT = "writer";
-
 	public static void main(String[] args) throws Exception {
 		if (args.length == 0) {
 			System.err.println("Please input configuration file");
 			System.exit(-1);
 		}
-
-		LoadConf(args[0]);
+		URL url = TestStormTopology.class.getClassLoader().getResource("storm.yaml");
+		//File file = new File();
+		LoadConf(url.getFile());
 
 		TopologyBuilder builder = setupBuilder();
 
@@ -47,16 +47,16 @@ public class TestStormTopology {
 	private static TopologyBuilder setupBuilder() throws Exception {
 		TopologyBuilder builder = new TopologyBuilder();
 
-		int writerParallel = JStormUtils.parseInt(
-				conf.get("topology.writer.parallel"), 1);
+		int boltParallel = JStormUtils.parseInt(
+				conf.get("topology.bolt.parallel"), 1);
 
 		int spoutParallel = JStormUtils.parseInt(
 				conf.get("topology.spout.parallel"), 1);
 
-		builder.setSpout("MetaSpout", new MetaSpout(), spoutParallel);
+		builder.setSpout("TestRocketMQStormSpout", new TestRocketMQStormSpout(), spoutParallel);
 
-		builder.setBolt(WRITER_COMPONENT, new WriterBolt(), writerParallel)
-				.shuffleGrouping("MetaSpout");
+		builder.setBolt("TestRocketMQStormBolt", new TestRocketMQStormBolt(), boltParallel)
+		.shuffleGrouping("MetaSpout");
 
 		return builder;
 	}
