@@ -20,7 +20,7 @@ import io.parallec.core.RequestProtocol;
 import io.parallec.core.ResponseOnSingleTask;
 
 public class TestRocketMQProducer {
-	public static String serverUrl = "localhost:9876";
+	public static String serverUrl = "182.92.150.57:9876";
 
 	public static void main(String[] args) throws MQClientException, InterruptedException{
 		ParallelClient pc = new ParallelClient();
@@ -41,17 +41,18 @@ public class TestRocketMQProducer {
 				"api/v1/ticker.do?symbol=ltc_usd"));
 		replaceLists.add(Arrays.asList("api/v1/ticker.do?symbol=btc_cny",
 				"api/v1/ticker.do?symbol=eth_cny"));
-		
+
 		final Map<String, String> hostMap = new HashMap<String, String>();
 		hostMap.put("www.okcoin.com", "okcoin.com");
 		hostMap.put("www.okcoin.cn", "okcoin.cn");
 		final Map<String, String> pathMap = new HashMap<String, String>();
-		pathMap.put("api/v1/ticker.do?symbol=btc_usd", "btc_usd");
-		pathMap.put("api/v1/ticker.do?symbol=eth_usd", "eth_usd");
-		pathMap.put("api/v1/ticker.do?symbol=ltc_usd", "ltc_usd");
-		pathMap.put("api/v1/ticker.do?symbol=btc_cny", "btc_cny");
-		pathMap.put("api/v1/ticker.do?symbol=eth_cny", "eth_cny");
-		
+		pathMap.put("/api/v1/ticker.do?symbol=btc_usd", "btc_usd");
+		pathMap.put("/api/v1/ticker.do?symbol=eth_usd", "eth_usd");
+		pathMap.put("/api/v1/ticker.do?symbol=ltc_usd", "ltc_usd");
+		pathMap.put("/api/v1/ticker.do?symbol=btc_cny", "btc_cny");
+		pathMap.put("/api/v1/ticker.do?symbol=eth_cny", "eth_cny");
+
+		responseContext.put("pathMap", pathMap);
 		/*
 		 .setReplaceVarMapToSingleTargetSingleVar("JOB_ID", Arrays.asList("api/v1/ticker.do?symbol=btc_usd", 
 			"api/v1/ticker.do?symbol=eth_usd",
@@ -68,18 +69,16 @@ public class TestRocketMQProducer {
 			ptb.execute(new ParallecResponseHandler(){
 				public void onCompleted(ResponseOnSingleTask res, Map<String, Object> responseContext) {
 					Message msg = new Message();
-					msg.setTopic("tiker");
+					msg.setTopic("ticker");
 					msg.setTags("TagA");
-					
+
 					String Host = res.getRequest().getHostUniform(); //www.okcoin.com
 					String path = res.getRequest().getResourcePath(); ///api/v1/ticker.do?symbol=btc_usd
-					JSONObject jsonObject = JSON.parseObject(res.getResponseContent());
+					JSONObject jsonObject = JSON.parseObject(res.getResponseContent());					
 					jsonObject.put("host", hostMap.get(Host));
 					jsonObject.put("path", pathMap.get(path));
 					msg.setBody(jsonObject.toJSONString().getBytes());
-					System.out.println("Res = " + jsonObject.toJSONString());					
-					System.out.println("Res = " + res.getResponseContent());
-					
+					System.out.println("Res = " + jsonObject.toJSONString());
 					try {
 						DefaultMQProducer producer = (DefaultMQProducer)responseContext.get("producer");
 						producer.sendOneway(msg);

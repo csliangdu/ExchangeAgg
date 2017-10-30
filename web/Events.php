@@ -82,3 +82,11 @@ class Events
        //GateWay::sendToAll("$client_id logout");
     }
 }
+
+
+A
+B
+C
+D
+Events
+ForG

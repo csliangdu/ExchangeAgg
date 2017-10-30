@@ -19,6 +19,7 @@ import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichSpout;
+import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
 //import backtype.storm.topology.IRichSpout;
 
@@ -58,7 +59,7 @@ public class TestRocketMQStormSpout extends BaseRichSpout implements MessageList
 
 	@Override  
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {  
-		//...  
+		declarer.declare(new Fields("tickerType"));
 	}
 
 	@Override
@@ -67,11 +68,18 @@ public class TestRocketMQStormSpout extends BaseRichSpout implements MessageList
 		for (MessageExt msg : msgs) {
 			String body = new String(msg.getBody());
 			JSONObject jsonObject = JSON.parseObject(body);
-			System.out.println("Spout Message = " + msg.toString());
-			logger.info("Spout Message = " + msg.toString());
+			//System.out.println("Spout Message body = " + body);
+			logger.info("Spout Message body = " + body);
 			//����: BTC_CASH VS ETH_CASH OR COIN_CAHS VS COIN_COIN
-			if (String.valueOf(jsonObject.get("path")).contains("btc")){
-				collector.emit("btc", new Values(jsonObject.toJSONString()));
+			String path = String.valueOf(jsonObject.get("path"));
+			logger.info("Path = " + path);
+			if (path.contains("usd") || path.contains("cny")){
+				String cashLabel = path.split("_")[1];
+				collector.emit(new Values(cashLabel, jsonObject.toJSONString()));
+				System.out.println("cash label ================" + cashLabel);
+				System.out.println("send cash data ================" + new Values(jsonObject.toJSONString()));
+			} else {
+				collector.emit(new Values("coin", jsonObject.toJSONString()));
 				System.out.println("send_data: btc" + new Values(jsonObject.toJSONString()));
 			}
 		}  

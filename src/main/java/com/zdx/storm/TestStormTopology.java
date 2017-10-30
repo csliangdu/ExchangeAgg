@@ -15,7 +15,9 @@ import org.yaml.snakeyaml.Yaml;
 import backtype.storm.Config;
 import backtype.storm.LocalCluster;
 import backtype.storm.StormSubmitter;
+import backtype.storm.topology.IRichSpout;
 import backtype.storm.topology.TopologyBuilder;
+import backtype.storm.tuple.Fields;
 
 import com.alibaba.jstorm.utils.JStormUtils;
 
@@ -55,11 +57,12 @@ public class TestStormTopology {
 
 		int spoutParallel = JStormUtils.parseInt(
 				conf.get("topology.spout.parallel"), 1);
+		IRichSpout spout = new TestRocketMQStormSpout();
+		builder.setSpout("TestRocketMQStormSpout", spout, spoutParallel);
 
-		builder.setSpout("TestRocketMQStormSpout", new TestRocketMQStormSpout(), spoutParallel);
-
-		builder.setBolt("TestRocketMQStormBolt", new TestRocketMQStormBolt(), boltParallel);
-
+		builder.setBolt("TestRocketMQStormBolt", new TestRocketMQStormBolt(), 
+				boltParallel).fieldsGrouping("TestRocketMQStormSpout", 
+						new Fields("tickerType"));
 		return builder;
 	}
 

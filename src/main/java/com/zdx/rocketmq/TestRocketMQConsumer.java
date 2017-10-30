@@ -20,7 +20,7 @@ import org.java_websocket.drafts.Draft_6455;
  */
 public class TestRocketMQConsumer {
 
-	public static String serverUrl = "localhost:9876";
+	public static String serverUrl = "182.92.150.57:9876";
 
 	public static String webSocketServerIP = "182.92.150.57";
 	public static String webSocketServerPort = "8001";
