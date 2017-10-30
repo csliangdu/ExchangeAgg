@@ -1,11 +1,10 @@
 package com.zdx.storm;
 import java.util.Map;
 
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.alibaba.jstorm.metric.MetaType;
-
-import org.apache.logging.log4j.LogManager;
 
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
@@ -17,7 +16,7 @@ import backtype.storm.tuple.Tuple;
 public class TestRocketMQStormBolt implements IRichBolt {
 
 	private static final long serialVersionUID = 2495121976857546346L;
-	private static final Logger logger = LogManager.getLogger(TestRocketMQStormBolt.class);
+	private static final Logger logger = LoggerFactory.getLogger(TestRocketMQStormBolt.class);
 	protected OutputCollector collector;
 
 	public void prepare(Map stormConf, TopologyContext context,

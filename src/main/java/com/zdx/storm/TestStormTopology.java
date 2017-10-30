@@ -30,14 +30,17 @@ public class TestStormTopology {
 	private static Logger LOG = Logger.getLogger(TestStormTopology.class);
 
 	public static void main(String[] args) throws Exception {
+		
 		if (args.length == 0) {
 			System.err.println("Please input configuration file");
 			System.exit(-1);
 		}
-		URL url = TestStormTopology.class.getClassLoader().getResource("storm.yaml");
-		//File file = new File();
+		LoadConf(args[0]);
+		/*
+		URL url = TestStormTopology.class.getClassLoader().getResource("stormtest.yaml");
+		System.out.println(url.getFile());
 		LoadConf(url.getFile());
-
+		*/
 		TopologyBuilder builder = setupBuilder();
 
 		submitTopology(builder);
@@ -55,8 +58,7 @@ public class TestStormTopology {
 
 		builder.setSpout("TestRocketMQStormSpout", new TestRocketMQStormSpout(), spoutParallel);
 
-		builder.setBolt("TestRocketMQStormBolt", new TestRocketMQStormBolt(), boltParallel)
-		.shuffleGrouping("MetaSpout");
+		builder.setBolt("TestRocketMQStormBolt", new TestRocketMQStormBolt(), boltParallel);
 
 		return builder;
 	}

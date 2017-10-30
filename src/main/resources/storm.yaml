@@ -1,4 +1,0 @@
-storm.cluster.mode: local
-topology.bolt.parallel: 1
-topology.name: WufengTopology
-topology.writer.parallel: 1

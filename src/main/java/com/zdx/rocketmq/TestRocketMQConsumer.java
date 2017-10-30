@@ -33,7 +33,7 @@ public class TestRocketMQConsumer {
 
 		consumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_FIRST_OFFSET);
 
-		consumer.subscribe("TopicTest", "*");
+		consumer.subscribe("ticker", "*");
 
 		final WebSocketLocalClient wsClient = new WebSocketLocalClient( new URI( "ws://" + webSocketServerIP + ":" + webSocketServerPort), new Draft_6455() );
 		try {		 
