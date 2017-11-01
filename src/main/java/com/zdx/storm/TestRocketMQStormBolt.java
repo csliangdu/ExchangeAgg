@@ -1,9 +1,13 @@
 package com.zdx.storm;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
+import java.util.Collections;
 
+import org.apache.commons.collections4.ListUtils;
 import org.java_websocket.drafts.Draft_6455;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +15,8 @@ import org.slf4j.LoggerFactory;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.jstorm.metric.MetaType;
+import com.zdx.common.SortByPrice;
+import com.zdx.common.TickerFormat;
 import com.zdx.rocketmq.WebSocketLocalClient;
 
 import backtype.storm.task.OutputCollector;
@@ -19,16 +25,18 @@ import backtype.storm.topology.IRichBolt;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Tuple;
 
-
 public class TestRocketMQStormBolt implements IRichBolt {
 
 	private static final long serialVersionUID = 2495121976857546346L;
 	private static final Logger logger = LoggerFactory.getLogger(TestRocketMQStormBolt.class);
 	protected OutputCollector collector;
-	java.text.DecimalFormat   df   =new   java.text.DecimalFormat("#.00");  
-	Map<String, Map<String, Double>> coinPrices = new HashMap<String, Map<String, Double>>();
+	java.text.DecimalFormat   df   =new   java.text.DecimalFormat("#.00"); 
+
 	WebSocketLocalClient wsClient = null;
 
+	Map<String, Map<String, TickerFormat>> coinPrices = new HashMap<String,  Map<String, TickerFormat>>();	
+	ArrayList<TickerFormat> coinPricesList = new ArrayList<TickerFormat>();  
+	int s = 0;
 	public TestRocketMQStormBolt(){
 
 
@@ -36,15 +44,13 @@ public class TestRocketMQStormBolt implements IRichBolt {
 
 	public void prepare(Map stormConf, TopologyContext context,
 			OutputCollector collector) {
-		System.out.println("Exception1 ==================================================================");
-		System.out.println("Exception1 ==================================================================");
-		System.out.println("Exception1 ==================================================================");
-		System.out.println("Exception1 ==================================================================");
-		System.out.println("Exception1 ==================================================================");
-		System.out.println("Exception1 ==================================================================");
-		System.out.println("Exception1 ==================================================================");
-		System.out.println("Exception1 ==================================================================");
-		System.out.println("Exception1 ==================================================================");
+		int max=20;
+		int min=10;
+		Random random = new Random();
+
+		s = random.nextInt(max)%(max-min+1) + min;
+		System.out.println("new random = " + s);
+
 		WebSocketLocalClient wsClient = null;
 		try {
 			wsClient = new WebSocketLocalClient( new URI( "ws://" + AggConfig.webSocketServerIP + ":" + AggConfig.webSocketServerPort), new Draft_6455() );
@@ -60,7 +66,7 @@ public class TestRocketMQStormBolt implements IRichBolt {
 		this.collector = collector;
 	}
 
-	@SuppressWarnings("null")
+	@SuppressWarnings({ "null", "unchecked" })
 	public void execute(Tuple tuple) {
 		// TODO Auto-generated method stub
 		//MetaType metaTuple = (MetaType)tuple.getValue(0);
@@ -69,26 +75,48 @@ public class TestRocketMQStormBolt implements IRichBolt {
 		System.out.println("Exception11 ==================================================================");
 		System.out.println("Exception11 ==================================================================");
 		System.out.println("Exception11 ==================================================================");
-		System.out.println("Exception11 ==================================================================");
-		System.out.println("Exception11 ==================================================================");
+		logger.info("Exception11 ==================================================================");
+		logger.info("Exception11 ==================================================================");
+
+
 		String tickerType = tuple.getValue(0).toString();
 		String tickerInfo = tuple.getValue(1).toString();
-		JSONObject jsonObject = JSON.parseObject(tickerInfo);
-		String host = jsonObject.getString("host");
-		JSONObject tickerJson = JSON.parseObject(jsonObject.getString("ticker"));
-		Double coinPrice = 0.0;
+		TickerFormat tickerData = new TickerFormat();
 
+		tickerData.formatJsonString(tickerInfo);
+
+		logger.info("put data = " + s + "----" + tickerInfo);
+		logger.info("put type = " + s + "----" + tickerType);
+		Map<String, TickerFormat> cp = new HashMap<String, TickerFormat>();
+
+		if (coinPrices.containsKey(tickerType) ){
+			cp = coinPrices.get(tickerType);
+		}
+
+		for (Map.Entry<String, TickerFormat> entry : cp.entrySet()) {
+			logger.info("before Key = " + s + "----" + entry.getKey() + ", Value = " + entry.getValue().toJsonString());  
+		}		
+		cp.put(tickerData.exchangeName, tickerData);
+		coinPricesList.clear();
+		coinPricesList.addAll(cp.values());
+		Collections.sort(coinPricesList, new SortByPrice());
+		for (Map.Entry<String, TickerFormat> entry : cp.entrySet()) {
+			logger.info("after Key = " + s + "----" + entry.getKey() + ", Value = " + entry.getValue().toJsonString());  
+		}
+		for (TickerFormat x: coinPricesList ){
+			logger.info("after Sorting = " + x.toJsonString() ); 
+		}
+		coinPrices.put(tickerType, cp);
+		if (this.wsClient != null){
+			//wsClient.send("prices========" + coinPrices);
+		}
+		/*
 		System.out.println(coinPrices.toString());
 		if (tickerJson.containsKey("buy") && tickerJson.containsKey("sell")){
 			coinPrice = tickerJson.getDouble("buy") + tickerJson.getDouble("sell");
 			System.out.println(new java.text.DecimalFormat("#.00").format(coinPrice / 2));
 
-			Map<String, Double> cp = new HashMap<String, Double>();
-			if (coinPrices.containsKey(tickerType) ){
-				cp = coinPrices.get(tickerType);
-			}
-			cp.put(host, coinPrice);	
-			coinPrices.put(tickerType, cp);
+
 			if (this.wsClient != null){
 				wsClient.send("prices========" + coinPrices);
 			}
@@ -96,15 +124,13 @@ public class TestRocketMQStormBolt implements IRichBolt {
 			System.out.println("buy/sell dose not exists, they may use other words");
 		}
 
+		 */
 
-		System.out.println(tickerInfo);
-		System.out.println(host);
-		System.out.println(jsonObject.getString("ticker"));
 		/*
 		 */
-		System.out.println(coinPrices.toString());
-		System.out.println("Exception11 ==================================================================");
-		System.out.println("Exception11 ==================================================================");
+
+		logger.info("Exception11 ==================================================================");
+		logger.info("Exception11 ==================================================================");
 		System.out.println("Exception11 ==================================================================");
 		System.out.println("Exception11 ==================================================================");
 

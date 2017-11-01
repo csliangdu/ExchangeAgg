@@ -190,6 +190,12 @@
 			<artifactId>json-path</artifactId>
 			<version>${jsonpath.version}</version>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-collections4 -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-collections4</artifactId>
+			<version>4.1</version>
+		</dependency>
 
 		<dependency>
 			<groupId>io.parallec</groupId>

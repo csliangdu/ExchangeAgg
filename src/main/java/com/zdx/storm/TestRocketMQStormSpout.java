@@ -1,4 +1,6 @@
 package com.zdx.storm;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -28,6 +30,7 @@ public class TestRocketMQStormSpout extends BaseRichSpout implements MessageList
 	private SpoutOutputCollector collector;  
 	private transient DefaultMQPushConsumer consumer; 
 	private static final Logger logger = LoggerFactory.getLogger(TestRocketMQStormSpout.class);
+    
 
 	@SuppressWarnings("rawtypes")  
 	public void open(Map conf, TopologyContext context, SpoutOutputCollector collector) { 
@@ -49,6 +52,9 @@ public class TestRocketMQStormSpout extends BaseRichSpout implements MessageList
 		} 
 		System.out.println("Consumer Started.");  
 		logger.info("Consumer Started.");  
+
+		
+		
 		this.collector = collector;  
 	}  
 
@@ -70,17 +76,24 @@ public class TestRocketMQStormSpout extends BaseRichSpout implements MessageList
 			JSONObject jsonObject = JSON.parseObject(body);
 			//System.out.println("Spout Message body = " + body);
 			logger.info("Spout Message body = " + body);
-			//����: BTC_CASH VS ETH_CASH OR COIN_CAHS VS COIN_COIN
-			String path = String.valueOf(jsonObject.get("path"));
-			logger.info("Path = " + path);
-			if (path.contains("usd") || path.contains("cny")){
-				String cashLabel = path.split("_")[1];
-				collector.emit(new Values(cashLabel, jsonObject.toJSONString()));
-				System.out.println("cash label ================" + cashLabel);
-				System.out.println("send cash data ================" + new Values(jsonObject.toJSONString()));
-			} else {
-				collector.emit(new Values("coin", jsonObject.toJSONString()));
-				System.out.println("send_data: btc" + new Values(jsonObject.toJSONString()));
+			String key = jsonObject.getString("exchangeType");
+			System.out.println("Coin label ================" + key);
+			System.out.println("Coin label ================" + key);
+			if ("coin2coin".equals(key)){
+				//coin to coin
+				System.out.println("Coin label ================111");
+				String key1 = jsonObject.getString("coinA") + "_" + jsonObject.getString("coinB");
+				System.out.println("Coin label ================" + key1);
+				collector.emit(new Values(key1, body));
+				
+				System.out.println("send Coin data ================" + jsonObject.toJSONString());
+			} else if ("coin2cash".equals(key)) {
+				//coin to cash
+				System.out.println("Coin label ================222");
+				String key2 = jsonObject.getString("coinA") + "_cash";
+				collector.emit(new Values(key2, body));
+				System.out.println("cash label ================" + key2);
+				System.out.println("send cash data ================" + jsonObject.toJSONString());
 			}
 		}  
 		return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;  
