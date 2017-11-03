@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+	<script src="jquery_min.js"></script>
+</head>
+<body>
+ 
+<form onsubmit="return false;">
+    <h1> Netty WebSocket 协议 </h1>
+    <h3>客户端请求消息</h3>
+    <textarea id="requestText" style="width:200px;height:100px;"></textarea>
+    <input type="button" value="发送WebSocket请求消息" onclick="send(document.getElementById('requestText').value)"/>
+    <h3>服务端返回的应答消息</h3>
+    <textarea id="responseText" style="width:200px;height:100px;"></textarea>
+	
+	<div>
+	 <!-- 显示后台数据的表格 -->
+	 <table id="mainTable" class="display hover" border="1">
+	 <thead>
+	 <tr>
+	 <th>交易所</th>
+	 <th>交易对</th>
+	 <th>价格</th>
+	 <th>交易所</th>
+	 <th>交易对</th>
+	 <th>价格</th>
+	 </tr>
+	 </thead>
+	 <tbody id="tbody">
+	 <tr id="exchA" class="example">
+	 <td id="coinA"></td>
+	 <td id="midAUSD"></td>
+	 <td id="exchB"></td>
+	 <td id="coinB"></td>
+	 <td id="midBUSD"></td>
+	 </tr>
+	 </tbody>
+	 </table>
+	 </div>
+
+ </div>
+</form>
+ 
+<script type="text/javascript">
+    window.WebSocket = window.WebSocket || window.MozWebSocket;
+    if (!window.WebSocket){
+        alert("你的浏览器不支持websocket协议");
+    }else{
+        var socket = new WebSocket("ws://182.92.150.57:8001");
+        socket.onmessage = function (event) {
+            var ta = document.getElementById('responseText');
+            ta.value = event.data;
+			console.info(event.data);
+			var obj = JSON.parse(event.data);//解析json字符串为json对象形式
+			var trStr = '';//动态拼接table
+			 // var html = '';
+			for (var i = 0; i < obj.length; i++) {//循环遍历出json对象中的每一个数据并显示在对应的td中
+				trStr += '<tr class="example">';//拼接处规范的表格形式
+				trStr += '<td width="15%" >' + obj[i].exchA + '</td>';//数据表的主键值
+				trStr += '<td width="15%">' + obj[i].coinA + '</td>';//对应数组表的字段值
+				trStr += '<td width="15%">' + obj[i].midAUSD + '</td>';
+				trStr += '<td width="15%">' + obj[i].exchB + '</td>';
+				trStr += '<td>' + obj[i].coinB + '</td>';
+				trStr += '<td>' + obj[i].midBUSD + '</td>';
+			 /*经典之处，要将主键对应的值以json的形式进行传递，才能在后台使用*/
+				//trStr += "<td><a href='#'style='text-decoration:none' onclick='Delete(\"" + obj[i].NVFID + "\")'>删除</a><td>";
+				trStr += '</tr>';
+			}
+			console.info(trStr);
+			$("#tbody").html(trStr);
+			
+        };
+        socket.onopen = function (event) {
+            alert("websocket连接建立成功...");
+            socket.send({"group":"browser"});
+        };
+        socket.onclose = function (event) {
+            alert("连接关闭");
+        };
+        function send(message) {
+            if (!window.WebSocket) {
+                return;
+            }
+            if (socket.readyState == WebSocket.OPEN) {
+                socket.send(message);
+            }
+            else {
+                alert("WebSocket not supported by this browser");
+            }
+        }
+    }
+</script>
+</body>
+</html>

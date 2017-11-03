@@ -17,6 +17,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.alibaba.jstorm.metric.MetaType;
 import com.zdx.common.SortByPrice;
 import com.zdx.common.TickerFormat;
+import com.zdx.common.TickerPair;
 import com.zdx.rocketmq.WebSocketLocalClient;
 
 import backtype.storm.task.OutputCollector;
@@ -35,7 +36,8 @@ public class TestRocketMQStormBolt implements IRichBolt {
 	WebSocketLocalClient wsClient = null;
 
 	Map<String, Map<String, TickerFormat>> coinPrices = new HashMap<String,  Map<String, TickerFormat>>();	
-	ArrayList<TickerFormat> coinPricesList = new ArrayList<TickerFormat>();  
+	ArrayList<TickerFormat> coinPricesList = new ArrayList<TickerFormat>();
+	ArrayList<TickerPair> tickerPairList = new ArrayList<TickerPair>();
 	int s = 0;
 	public TestRocketMQStormBolt(){
 
@@ -107,27 +109,34 @@ public class TestRocketMQStormBolt implements IRichBolt {
 			logger.info("after Sorting = " + x.toJsonString() ); 
 		}
 		coinPrices.put(tickerType, cp);
-		if (this.wsClient != null){
-			//wsClient.send("prices========" + coinPrices);
-		}
-		/*
-		System.out.println(coinPrices.toString());
-		if (tickerJson.containsKey("buy") && tickerJson.containsKey("sell")){
-			coinPrice = tickerJson.getDouble("buy") + tickerJson.getDouble("sell");
-			System.out.println(new java.text.DecimalFormat("#.00").format(coinPrice / 2));
-
-
-			if (this.wsClient != null){
-				wsClient.send("prices========" + coinPrices);
+		
+		tickerPairList.clear();
+		TickerPair tp = new TickerPair();
+		for (int i1 = 0; i1 < coinPricesList.size(); i1 ++){
+			for (int i2 = i1+1; i2 < coinPricesList.size(); i2 ++){
+				tp.formatTickerPair(coinPricesList.get(i1), coinPricesList.get(i2));				
+				tickerPairList.add(tp);
 			}
-		} else {
-			System.out.println("buy/sell dose not exists, they may use other words");
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("[");
+		for (int i1 = 0; i1 < tickerPairList.size(); i1++){
+			sb.append(tp.toJsonString());
+			if ( (i1 + 1) < tickerPairList.size()){
+				sb.append(",");
+			}
+		}
+		sb.append("]");
+		String pair = sb.toString();
+		System.out.println(pair);
+		System.out.println("{\"key\":\"pair\",\"val\":\"" + pair + "\"}");
+		
+		if (this.wsClient != null){
+			wsClient.send(pair);
+
 		}
 
-		 */
-
-		/*
-		 */
 
 		logger.info("Exception11 ==================================================================");
 		logger.info("Exception11 ==================================================================");
