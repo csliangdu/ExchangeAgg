@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Refresh from url after use data option</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="bootstrap.min.css">
+    <link rel="stylesheet" href="bootstrap-table.min.css">
+    <script src="jquery.min.js"></script>
+    <script src="bootstrap.min.js"></script>
+    <script src="bootstrap-table.min.js"></script>
+
+    <link rel="stylesheet" href="CSS3loader/loaders.css">
+
+    <style>
+        div.loader .loader-inner {
+            position: absolute;
+            left: 50%;
+            margin: 20px 0 50px -76px;
+
+            text-align: center;
+        }
+        div.loader>.ball-pulse>div {
+            background-color: #2f96b4;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Refresh from url after use data option(<a href="https://github.com/wenzhixin/bootstrap-table/issues/137" target="_blank">#137</a>).</h1>
+    <p><button id="button" class="btn btn-default">Refresh from url</button></p>
+    <table id="table" class="table table-bordered">
+        <thead>
+        <tr>
+            <th data-field="mid">ID</th>
+            <th data-field="bid">Item Name</th>
+            <th data-field="ask">Item Price</th>
+            <th data-field="last_price">Item Price</th>
+            <th data-field="volumn">Item Price</th>
+        </tr>
+        </thead>
+    </table>
+</div>
+<script>
+    $(function () {
+        var $table = $('#table');
+        //$table.bootstrapTable({data:[]});
+
+        $.ajax({
+            url: 'https://api.bitfinex.com/v1/pubticker/ethbtc',
+            type: 'get',
+            dataType: 'json',
+            beforeSend: function () {
+                $('#table').append('<div class="loader"><div class="loader-inner ball-pulse"><div></div><div></div><div></div></div></div>');
+            },
+            success: function (d) {
+                setTimeout(function () {
+                    $('#table>div.loader').remove();
+                    $table.bootstrapTable({
+                        data: d
+                    });
+                }, 2000);
+            }
+        });
+
+        /*$table.bootstrapTable({
+            data: [{
+                "id": 0,
+                "name": "Item 0",
+                "active": 0,
+                "user_id": 0,
+                "no_of_reports": 0
+            }]
+        });*/
+        $('#button').click(function () {
+            $table.bootstrapTable('refresh', {url: 'https://api.bitfinex.com/v1/pubticker/ethbtc'});
+        });
+    });
+</script>
+</body>
+</html>
