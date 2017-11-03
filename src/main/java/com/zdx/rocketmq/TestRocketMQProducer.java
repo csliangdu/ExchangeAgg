@@ -36,16 +36,16 @@ public class TestRocketMQProducer {
 		responseContext.put("producer", producer);
 
 		List<String> targetHosts = new ArrayList<String>(Arrays.asList("www.okcoin.com",
-				"www.okcoin.cn"));//, "api.bitfinex.com"));
+				"api.bitfinex.com"));
 		List<List<String>> replaceLists = new ArrayList<List<String>>();
 
 		replaceLists.add(Arrays.asList("api/v1/ticker.do?symbol=btc_usd", 
 				"api/v1/ticker.do?symbol=eth_usd", 
 				"api/v1/ticker.do?symbol=ltc_usd"));
-		replaceLists.add(Arrays.asList("api/v1/ticker.do?symbol=btc_cny",
-				"api/v1/ticker.do?symbol=eth_cny"));
-		//replaceLists.add(Arrays.asList("v1/pubticker/ethbtc",
-		//		"v1/pubticker/zecbtc"));
+		//replaceLists.add(Arrays.asList("api/v1/ticker.do?symbol=btc_cny",
+		//		"api/v1/ticker.do?symbol=eth_cny"));
+		replaceLists.add(Arrays.asList("v1/pubticker/ethbtc",
+				"v1/pubticker/zecbtc"));
 		
 		final Map<String, String> hostMap = new HashMap<String, String>();
 		hostMap.put("www.okcoin.com", "okcoin.com");
